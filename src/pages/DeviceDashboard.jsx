@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { WS_BASE_URL } from '../services/api.client';
 import AddDeviceModal from '../components/dashboard/AddDeviceModal';
 
 const DeviceDashboard = () => {
@@ -31,7 +32,7 @@ const DeviceDashboard = () => {
   useEffect(() => {
     if (!activeDevice || !user) return;
 
-    const ws = new WebSocket(`ws://localhost:8000/api/ws/telemetry/${activeDevice.id}`);
+    const ws = new WebSocket(`${WS_BASE_URL}/api/ws/telemetry/${activeDevice.id}`);
 
     ws.onopen = () => {
       setConsoleLogs(prev => [`[WS] Connected to telemetry stream for ${activeDevice.id}`, ...prev].slice(0, 8));
