@@ -26,4 +26,12 @@ class ProductRepository:
     async def delete_product(self, product_id: str):
         return await self.collection.delete_one({"_id": ObjectId(product_id)})
 
+    async def get similar-products(self,category: str , exclude_id : str, limit: int = 4 ):
+        cursor = self .collection.find({
+            "category": category,
+            "_id": { "$ne": obejectId(exclude_id)}
+        }).limit(limit)
+        async def get_popular_products(self , limit : int = 4):
+            cursor = self.collection.find()sort("sales_count" , -1).limit(limit)
+            return await cursor.to_list(length= limits)
 product_repo = ProductRepository()

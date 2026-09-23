@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect} from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Trash2, ShoppingCart, ArrowRight, Minus, Plus, 
@@ -9,6 +9,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../hooks/useCart';
 import toast from 'react-hot-toast';
+import { getCartRecommandations } from '../../services/product.service';
+import ProductCard from '../../components/ui/ProductCard';
 
 const Cart = () => {
   const { cartItems, onRemoveFromCart, onUpdateQuantity, onAddToCart, discount, setDiscount, appliedPromo, setAppliedPromo } = useCart();
@@ -16,6 +18,14 @@ const Cart = () => {
   const [savedItems, setSavedItems] = useState([]);
   const [promoCode, setPromoCode] = useState('');
   const [isApplying, setIsApplying] = useState(false);
+
+  const [suggestions , setsuggestions ] = useState([]);
+
+  useEffect(() => {
+    if( !cartItems.length) return;
+    const ids = cartItems.map(items => item.id);
+    getCartRecommandations(ids).then(setsuggestions).catch(() => setsuggestions([]));
+  }, [cartItems]);
 
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const shipping = subtotal > 0 ? (subtotal > 50 ? 0 : 5.99) : 0;
@@ -353,6 +363,20 @@ const Cart = () => {
             </div>
             </div>
           </div>
+        )}
+        {suggestions.length > 0&&(
+          <div className ="mt-16">
+            <h2 className =" text-2x1 font-black text-text-primary tracking-tighter uppercase mb-8">
+              You May Also <span className = "text-accent">Need</span>
+  
+            </h2>
+            <div className = "grid grid-cols-2 1g:grid-cols-4 gap-10">
+              {suggestions.map(p => (
+
+                <ProductCard key ={p_id} product ={p} onAddToCart = { onAddToCart} />
+              ))}
+            </div>
+            </div>
         )}
       </div>
     </motion.div>

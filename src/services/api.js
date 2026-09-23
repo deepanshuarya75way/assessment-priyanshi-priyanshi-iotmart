@@ -1,6 +1,6 @@
 import apiClient from './api.client';
 import { loginUser, signupUser, sendVerification, verifyMobile, updateIdentity, forgotPassword } from './auth.service';
-import { getProducts, getProductsPaginated, addProductReview, getProductById, createProduct, updateProduct, deleteProduct } from './product.service';
+import { getProducts, getProductsPaginated, addProductReview, getProductById, createProduct, updateProduct, deleteProduct , getRecommandations, getCartRecommandations} from './product.service';
 import { placeOrder, getOrdersByUser, getUserOrders, getAllOrders, updateOrderStatus, updateOrderTracking, getLiveTracking, refundOrder } from './order.service';
 import { getUsers, updateUserRole, updateUserStatus, toggleWishlist, addAddress, removeAddress, updateUserProfile, changeUserPassword, deactivateAccount, addRecentlyViewed } from './user.service';
 import { getDashboardStats } from './analytics.service';
@@ -45,7 +45,9 @@ export {
   updateIdentity,
   forgotPassword,
   deactivateAccount,
-  addRecentlyViewed
+  addRecentlyViewed,
+  getRecommandations,
+  getCartRecommandations,
 };
 
 export const setup2FA = (email) => apiClient.get(`/auth/2fa/setup?email=${email}`);

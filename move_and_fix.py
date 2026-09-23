@@ -41,3 +41,6 @@ def fix_imports(filepath):
 for new in files_to_move.values():
     if os.path.exists(new):
         fix_imports(new)
+        
+        for ( content  = content.place)
+        

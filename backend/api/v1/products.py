@@ -8,7 +8,11 @@ from repositories.product_repo import product_repo
 from bson import ObjectId
 from fastapi import Depends
 from api.deps import get_current_active_admin
-
+from core.redis_cache import get_cache , set_cache
+from repositories.order_repo import order_repo
+from core.database import db
+from api.deps import get_current_active_admin
+from fastapi import Depends
 router = APIRouter()
 
 from core.redis_cache import get_cache, set_cache, delete_cache
@@ -57,7 +61,58 @@ async def get_product(id: str):
         product["_id"] = str(product["_id"])
         return product
     raise HTTPException(status_code=404, detail="Product not found")
+@router.get("/{id}/recommandations")
+async def get_recommandations(id:str, limit: int = 4):
+    cache_key = f"reco:product:{id}"
+    cached = await get_cache (cache_key)
+    if cached:
+        return cached 
 
+    product = await product_repo.get_product_by_id(id)
+    if not product :
+        return cached
+
+    results = await product_repo.get_similar_products(product["category"], id , limit)
+    if not results   :
+        results = await product_repo.get_popular_products(limit)
+
+
+    await set_cache(cache_key, results, expire=3600)
+    return results
+
+@router.post("/recommandations/cart")
+async def get_cart_recommandations(product_ids: list[str], limit : int = 4):
+    if not product_ids:
+        return[]
+    
+    orders = await order_repo.get_orders_containing(product_ids)
+    freq = {}
+    for order in orders:
+        for item in order ["items"]:
+            pid = str(item["product_id"])
+            if pid not in product_ids:
+                freq[pid] = Freq.get(pid,0)+ 1 
+
+        top_ids = sorted(freq, key= freq.get , reverse = true )[:limit]
+        if not top_ids:
+            return await product_repo.get_popular_products(limit)
+
+        products = [await products_repo.get_product_by_id(pid) for pid in top_ids]
+        return [p for p in products if p]    
+
+@router.get("/settings/recommandations")
+async def get_recommandations_settings():
+    setting = await db.settings.find_one({"key": "recommandations_enabled"})
+    return {"enabled": setting ["value"] if setting else true}
+
+@router.put("/settings/recommandations")
+async def toggle_recommandations(enabled:bool, admin=Depends(get_current_active_admin)):
+    await db.settings.update_one(
+        {"key": "recommandations_enabled"},
+        {"$set" : {"value": enabled}},
+        upsert = true
+    )
+    return{ "enabled" : enabled}
 @router.put("/{id}", response_model=Product)
 async def update_product(id: str, product: ProductCreate = Body(...), current_user: dict = Depends(get_current_active_admin)):
     updated = await product_repo.update_product(id, product.model_dump())

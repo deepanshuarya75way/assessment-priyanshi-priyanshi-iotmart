@@ -8,12 +8,13 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProductCard from '../../components/ui/ProductCard';
-import { getProductById, getProducts, addProductReview } from '../../services/api';
+import { getProductById, getProducts, addProductReview , addRecommandations } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { useComparison } from '../../context/ComparisonContext';
 import { useCart } from '../../hooks/useCart';
 import { Skeleton, SkeletonText } from '../../components/common';
 import SEO from '../../components/common/SEO';
+import { getRecommandations } from '../../services/product.service';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -74,6 +75,11 @@ const ProductDetail = () => {
     fetchData();
   }, [id]);
 
+  useEffect(() => {
+    if(!product?._id)return;
+    getRecommandations(product._id).then(setRelatedProducts).catch(() => setRelatedProducts([]));
+    }, [product?._id]);
+
   // Simulation Logic
   useEffect(() => {
     if (showSim) {
@@ -110,8 +116,7 @@ const ProductDetail = () => {
     }
   };
 
-  const relatedProducts = allProducts.filter(p => p.category === product?.category && p._id !== product?._id).slice(0, 4);
-
+  const [relatedProducts, setRelatedProducts] = userstate([]);
   if (loading) {
     return (
       <div className="pt-32 pb-32 min-h-screen bg-app-bg">

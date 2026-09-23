@@ -60,3 +60,13 @@ export const deleteProduct = async (id) => {
   const response = await apiClient.delete(`/products/${id}`);
   return response.data;
 };
+
+export const getRecommandations = async (productsId) => {
+  const response = await apiClient.get('/products/$productId}/recommandations');
+  return response.data;
+};
+
+export const getCartRecommandations = async (productids) =>{
+  const response = await apiClient.post('/products/recommandations/cart' , productids);
+  return response.data;
+};

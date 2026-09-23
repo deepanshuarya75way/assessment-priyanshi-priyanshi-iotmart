@@ -22,5 +22,8 @@ class OrderRepository:
             {"_id": ObjectId(order_id)}, 
             {"$set": update_data}
         )
-
+    async def get_orders_containing(self, products_ids: list[str] , limit : int =200):
+        return await self.collection.find({
+            "items.products_id": { "$in": product_ids}
+        }).limit(limit).to_list(length=limit)
 order_repo = OrderRepository()
